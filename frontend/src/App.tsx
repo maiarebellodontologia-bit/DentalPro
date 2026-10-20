@@ -5,6 +5,7 @@ import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Patients } from "./pages/Patients";
 import { Appointments } from "./pages/Appointments";
+import { IAModule } from "./pages/ia/IAModule";
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -41,6 +42,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Appointments />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/ia"
+            element={
+              <PrivateRoute>
+                <IAModule />
               </PrivateRoute>
             }
           />

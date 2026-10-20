@@ -267,6 +267,36 @@ export const Dashboard: React.FC = () => {
                 </p>
               </div>
             </button>
+
+            <button
+              onClick={() => navigate("/ia")}
+              className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+            >
+              <span className="text-3xl">🩻</span>
+              <div className="text-left">
+                <p className="font-semibold text-gray-800">
+                  Assistente clínico (IA)
+                </p>
+                <p className="text-sm text-gray-600">
+                  Radiografia, plano de tratamento e periograma
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => navigate("/ia?aba=painel")}
+              className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-amber-500 hover:bg-amber-50 transition-colors"
+            >
+              <span className="text-3xl">📈</span>
+              <div className="text-left">
+                <p className="font-semibold text-gray-800">
+                  Tratamentos em aberto
+                </p>
+                <p className="text-sm text-gray-600">
+                  Diagnosticado e não realizado
+                </p>
+              </div>
+            </button>
           </div>
         </section>
       </main>
