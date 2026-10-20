@@ -29,7 +29,11 @@ model Patient {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  appointments Appointment[]
+  appointments   Appointment[]
+  consents       Consent[]
+  radiographs    Radiograph[]
+  treatmentPlans TreatmentPlan[]
+  perioCharts    PerioChart[]
 }
 
 model Appointment {
@@ -45,4 +49,109 @@ model Appointment {
 
   patient Patient @relation(fields: [patientId], references: [id])
   user    User    @relation(fields: [userId], references: [id])
+}
+
+// ---------- Módulo de IA (radiografia, plano, periograma, painel) ----------
+// Campos JSON ficam como String porque o banco é SQLite.
+
+model Consent {
+  id        Int       @id @default(autoincrement())
+  patientId Int
+  purpose   String    // "ia_radiografia" | "ia_voz"
+  grantedAt DateTime  @default(now())
+  revokedAt DateTime?
+  userId    Int       // quem registrou
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, purpose])
+}
+
+model Radiograph {
+  id          Int       @id @default(autoincrement())
+  patientId   Int
+  kind        String    @default("panoramica") // panoramica | periapical | interproximal
+  filePath    String
+  mimeType    String
+  width       Int?
+  height      Int?
+  aiStatus    String    @default("pending") // pending | analyzing | done | error | skipped
+  aiModel     String?
+  aiError     String?
+  reviewedAt  DateTime?
+  reviewedBy  Int?
+  createdAt   DateTime  @default(now())
+
+  patient  Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  findings Finding[]
+  plans    TreatmentPlan[]
+}
+
+model Finding {
+  id           Int      @id @default(autoincrement())
+  radiographId Int
+  type         String   // chave do catálogo (carie, periapical...)
+  tooth        Int?     // notação FDI
+  x            Float    // caixa normalizada 0..1
+  y            Float
+  w            Float
+  h            Float
+  note         String?
+  source       String   @default("dentist") // ai | dentist
+  confidence   Float?
+  status       String   @default("confirmed") // suggested | confirmed | rejected
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  radiograph Radiograph @relation(fields: [radiographId], references: [id], onDelete: Cascade)
+}
+
+model ClinicProcedure {
+  key   String @id
+  name  String
+  price Float
+}
+
+model FindingRule {
+  type        String @id
+  urgency     String // alta | media | baixa | info
+  recommended String // JSON: string[] de chaves de procedimento
+  alternative String // JSON: string[]
+}
+
+model TreatmentPlan {
+  id           Int       @id @default(autoincrement())
+  patientId    Int
+  radiographId Int?
+  option       String    // urgente | recomendado | economico
+  items        String    // JSON das linhas do plano
+  total        Float
+  status       String    @default("accepted") // accepted | done | cancelled
+  acceptedAt   DateTime  @default(now())
+  completedAt  DateTime?
+  userId       Int
+
+  patient    Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  radiograph Radiograph? @relation(fields: [radiographId], references: [id], onDelete: SetNull)
+}
+
+model PerioChart {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  data      String   // JSON { [dente]: { V:[3], L:[3], bV:[3], bL:[3] } }
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  action    String
+  entity    String
+  entityId  Int?
+  detail    String?
+  createdAt DateTime @default(now())
 }
